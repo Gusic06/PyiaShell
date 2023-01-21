@@ -19,6 +19,7 @@ from apps.youtube_dl.youtube import YoutubeDL
 from apps.youtube_dl.youtube_dl import youtube_dl
 from dependencies.commands import commands
 from dependencies.check_time_settings import check_time_settings
+from dependencies.command_list import command_list
 
 
 def PyiaShell():
@@ -409,13 +410,7 @@ def PyiaShell():
                 os.system("cls")
                 sys.exit()
 
-        if user_input[0] not in ("exit",
-        "delete", "open", "systime",
-        "newthr", "cd", "mkdir", "touch",
-        "ls", "code", "pylint", 
-        "pip", "root", "pyvim", 
-        "youtube-dl", "Youtube-DL", 
-        "clear", "cls", "help", "run"):
+        if user_input[0] not in (command_list):
             console.log(f"[bold][red]'{user_input[0]}' is not a valid command![/]")
 
             
