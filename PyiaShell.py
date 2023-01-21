@@ -12,6 +12,7 @@ from threading import *
 import importlib
 import getpass
 from cryptography.fernet import Fernet
+import re as regex
 
 from apps.pyflix.pyflix import pyflix
 from apps.youtube_dl.youtube import YoutubeDL
@@ -261,9 +262,18 @@ def PyiaShell():
 
         if user_input[0] == "touch":
             try:
-                user_input[1] == f"{user_input[1]}.txt" if "." not in f"{user_input[1]}[:4]" else user_input[1]
-                with open(user_input[1], "w") as file:
-                    file.write("")
+                try:
+                    if user_input[2] == ">>":
+                        _string = " ".join(user_input)
+                        find_contents = regex.search('"', _string)
+                        index_of_string = find_contents.span()
+                        file_contents = _string[index_of_string[1]:-1:1] # Slicing from the start of the string to the end of the string to get the contents
+                        with open(user_input[1], "w") as file:
+                            file.write(file_contents) 
+                except IndexError:
+                    user_input[1] = f"{user_input[1]}.txt" if "." not in f"{user_input[1]}[:4]" else user_input[1]
+                    with open(user_input[1], "w") as file:
+                        file.write("")
             except IndexError:
                 console.log("[bold][red]No filename specified![/]")
 
@@ -353,7 +363,7 @@ def PyiaShell():
                         try:
                             with open(items, "r")as file:
                                 contents = file.read()
-                            console.print(f"[bold][yellow]{contents}[/]")
+                            console.print(f"[bold][purple]{user_input[1]} >>[/] [yellow]'{contents}'[/]")
                         except PermissionError:
                             pass
             
@@ -392,7 +402,7 @@ def PyiaShell():
                 if os.path.exists(user_input[1]):
                     with open(user_input[1], "r")as file:
                         contents = file.read()
-                    console.print(f"[bold][yellow]{contents}[/]")
+                    console.print(f"[bold][purple]{user_input[1]} >>[/] [yellow]'{contents}'[/]")
 
                 if os.path.exists(user_input[1]) is False:
                     console.log(f"[bold][red]Error: {user_input[1]} either isn't in the current working directory or it doesn't exist.[/]")
