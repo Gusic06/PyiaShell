@@ -1,0 +1,22 @@
+command_list = [
+                "exit",
+                "delete", 
+                "open", 
+                "systime",
+                "newthr", 
+                "cd", 
+                "mkdir", 
+                "touch",
+                "ls", 
+                "code", 
+                "pylint", 
+                "pip", 
+                "root", 
+                "pyvim", 
+                "youtube-dl", 
+                "Youtube-DL", 
+                "clear", 
+                "cls", 
+                "help", 
+                "run"
+]
