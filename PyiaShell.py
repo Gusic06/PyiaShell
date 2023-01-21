@@ -1,4 +1,3 @@
-
 from rich.console import Console
 from rich import *
 from rich.panel import Panel
@@ -16,10 +15,11 @@ from cryptography.fernet import Fernet
 
 from apps.pyflix.pyflix import pyflix
 from apps.youtube_dl.youtube import YoutubeDL
-from apps.youtube_dl.youtube_dl import youtube_dl
+from apps.youtube_dl.youtube_dl import youtubeDl
 from dependencies.commands import commands
 from dependencies.check_time_settings import check_time_settings
 from dependencies.command_list import command_list
+
 
 
 def PyiaShell():
@@ -53,6 +53,7 @@ def PyiaShell():
         
         user_input = user_input.split(" ", 4)
         
+        
         if user_input[0] == "run":
             if ".py" in user_input[1] and os.path.exists(user_input[1]):
                 try:
@@ -65,7 +66,7 @@ def PyiaShell():
 
         
         if user_input[0] == "help":
-            console.print(commands)
+            console.print(f"\n{commands}")
 
 
         if user_input[0] in ("clear", "cls"):
@@ -184,11 +185,12 @@ def PyiaShell():
 
         if user_input[0] in ("youtube-dl", "Youtube-DL"):
             try:
-                main = YoutubeDL(2)
+                os.system("cls")
+                main = YoutubeDL()
                 try:
                     youtubeDl(user_input[1])
                 except IndexError:
-                    main.run("[bold][yellow]Link: [/]", 2)
+                    youtubeDl(console.input("[bold][yellow]Link: [/]"))
                 os.system("cls")
             except Exception:
                 pass
@@ -261,7 +263,7 @@ def PyiaShell():
 
         if user_input[0] == "touch":
             try:
-                user_input[1] = f"{user_input[1]}.txt" if "." not in f"{user_input[1]}[:-4]" else user_input[1]
+                user_input[1] == f"{user_input[1]}.txt" if "." not in f"{user_input[1]}[:4]" else user_input[1]
                 with open(user_input[1], "w") as file:
                     file.write("")
             except IndexError:
@@ -279,16 +281,25 @@ def PyiaShell():
 
                     if os.path.exists(fr".\\{dir_}"):
                         os.chdir(dir_)
+                        past_directory = current_directory
                         current_directory = fr"{current_directory}/{dir_}"
+                        
             except IndexError:
 
                 if user_input[1] != "?origin":
                     dir_ = user_input[1]
+                    if dir_ == "..":
+                        try:
+                            os.chdir(past_directory)
+                            current_directory = fr"{past_directory}/{current_directory}"
+                        except Exception as Err:
+                            console.log(f"[bold]Couldn't move up the directory tree -> {Err}[/]")
+                    if os.path.exists(fr".\\{dir_}") is False:
+                        console.log(f"[bold]Couldn't find [yellow]{dir_}[/] in current directory.[/]")
+                        pass
                     if os.path.exists(fr".\\{dir_}"):
                         os.chdir(dir_)
                         current_directory = fr"{current_directory}/{dir_}"
-                    if os.path.exists(fr".\\{dir_}"):
-                        console.log(f"[bold]Couldn't find [yellow]{dir_}[/] in current directory.[/]")
                                  
                 if user_input[1] == "?origin":
                     os.chdir(loop_back_directory)
@@ -316,10 +327,10 @@ def PyiaShell():
 
         if user_input[0] == "systime":
 
-            if user_input[1] in ("-e", "--edit"):
+            if user_input[1] == "-e" or user_input[1] == "--edit":
                 check_time_settings(user_input[1])
 
-            if user_input[1] in ("-v", "--view"):
+            if user_input[1] == "-v" or user_input[1] == "--view":
                 check_time_settings("-v")
 
 
@@ -354,7 +365,7 @@ def PyiaShell():
                         os.system(f"pyvim {user_input[2]}")
                         os.system("cls")
                         continue
-                    if user_input[2] in ("-c", "--credits"):
+                    if user_input[2] == "-c" or user_input[2] == "--credits":
                         console.print("[bold][yellow]PyVim[/] was created by [yellow]Jonathan Slenders\nhttps://github.com/prompt-toolkit/pyvim[/]")
                 except IndexError:
                     os.system("pyvim")
@@ -380,7 +391,7 @@ def PyiaShell():
 
             if os.path.exists(user_input[1]):
 
-                if os.path.exists(user_input[1]): # Bruh
+                if os.path.exists(user_input[1]):
                     with open(user_input[1], "r")as file:
                         contents = file.read()
                     console.print(f"[bold][yellow]{contents}[/]")
@@ -403,16 +414,16 @@ def PyiaShell():
 
         if user_input[0] == "exit":
             try:
-                if user_input[1] == "root":
+                if user_input[1] in ("root"):
                     root_access: bool = False
                     os.system("cls")
             except IndexError:
                 os.system("cls")
                 sys.exit()
 
-        if user_input[0] not in (command_list):
+        if user_input[0] not in command_list:
             console.log(f"[bold][red]'{user_input[0]}' is not a valid command![/]")
 
-            
+
 if __name__ == "__main__":
     PyiaShell()
