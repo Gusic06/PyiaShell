@@ -266,7 +266,7 @@ def PyiaShell():
 
         if user_input[0] == "touch":
             try:
-                user_input[1] == f"{user_input[1]}.txt" if "." not in f"{user_input[1]}[:4]" else user_input[1]
+                user_input[1] = f"{user_input[1]}.txt" if "." not in f"{user_input[1]}[:4]" else user_input[1]
                 with open(user_input[1], "w") as file:
                     file.write("")
             except IndexError:
