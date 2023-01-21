@@ -20,8 +20,6 @@ from dependencies.commands import commands
 from dependencies.check_time_settings import check_time_settings
 from dependencies.command_list import command_list
 
-
-
 def PyiaShell():
 
     install()
