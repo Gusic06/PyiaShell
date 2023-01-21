@@ -40,13 +40,8 @@ def PyiaShell():
 
         time_setting = check_time_settings("-") # Giving the function a none value to get an output
 
-        if time_setting == "US":
-            current_date = time.strftime("%m/%d/%y")
-        if time_setting == "EU":
-            current_date = time.strftime("%d/%m/%y")
-
-        if current_directory == '.': 
-            current_directory = '~'
+        current_date = time.strftime("%d/%m/%y") if time_setting == "EU" else time.strftime("%m/%d/%y")
+        current_directory = '~' if current_directory == "." else current_directory
         
         if root_access is True:
             console.print(f"\n[bold][red]root@{OSNAME} | {current_directory} | [{current_date}][/]")
@@ -56,7 +51,6 @@ def PyiaShell():
             user_input = console.input("[bold]> [/]")
         
         user_input = user_input.split(" ", 4)
-        
         
         if user_input[0] == "run":
             if ".py" in user_input[1] and os.path.exists(user_input[1]):
@@ -266,7 +260,7 @@ def PyiaShell():
 
         if user_input[0] == "touch":
             try:
-                user_input[1] = f"{user_input[1]}.txt" if "." not in f"{user_input[1]}[:4]" else user_input[1]
+                user_input[1] = f"{user_input[1]}.txt" if "." not in f"{user_input[1]}[:-4]" else user_input[1]
                 with open(user_input[1], "w") as file:
                     file.write("")
             except IndexError:
