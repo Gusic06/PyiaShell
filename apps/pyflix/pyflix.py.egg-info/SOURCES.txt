@@ -1,0 +1,7 @@
+setup.py
+pyflix.py.egg-info/PKG-INFO
+pyflix.py.egg-info/SOURCES.txt
+pyflix.py.egg-info/dependency_links.txt
+pyflix.py.egg-info/entry_points.txt
+pyflix.py.egg-info/requires.txt
+pyflix.py.egg-info/top_level.txt
