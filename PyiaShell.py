@@ -16,7 +16,7 @@ from cryptography.fernet import Fernet
 
 from apps.pyflix.pyflix import pyflix
 from apps.youtube_dl.youtube import YoutubeDL
-from apps.youtube_dl.youtube_dl import youtubeDl
+from apps.youtube_dl.youtube_dl import youtube_dl
 from dependencies.commands import commands
 from dependencies.check_time_settings import check_time_settings
 
