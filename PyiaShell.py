@@ -1,3 +1,4 @@
+
 from rich.console import Console
 from rich import *
 from rich.panel import Panel
@@ -18,7 +19,6 @@ from apps.youtube_dl.youtube import YoutubeDL
 from apps.youtube_dl.youtube_dl import youtubeDl
 from dependencies.commands import commands
 from dependencies.check_time_settings import check_time_settings
-
 
 
 def PyiaShell():
@@ -321,10 +321,10 @@ def PyiaShell():
 
         if user_input[0] == "systime":
 
-            if user_input[1] == "-e" or user_input[1] == "--edit":
+            if user_input[1] in ("-e", "--edit"):
                 check_time_settings(user_input[1])
 
-            if user_input[1] == "-v" or user_input[1] == "--view":
+            if user_input[1] in ("-v", "--view"):
                 check_time_settings("-v")
 
 
@@ -359,7 +359,7 @@ def PyiaShell():
                         os.system(f"pyvim {user_input[2]}")
                         os.system("cls")
                         continue
-                    if user_input[2] == "-c" or user_input[2] == "--credits":
+                    if user_input[2] in ("-c", "--credits"):
                         console.print("[bold][yellow]PyVim[/] was created by [yellow]Jonathan Slenders\nhttps://github.com/prompt-toolkit/pyvim[/]")
                 except IndexError:
                     os.system("pyvim")
@@ -385,7 +385,7 @@ def PyiaShell():
 
             if os.path.exists(user_input[1]):
 
-                if os.path.exists(user_input[1]):
+                if os.path.exists(user_input[1]): # Bruh
                     with open(user_input[1], "r")as file:
                         contents = file.read()
                     console.print(f"[bold][yellow]{contents}[/]")
@@ -408,7 +408,7 @@ def PyiaShell():
 
         if user_input[0] == "exit":
             try:
-                if user_input[1] in ("root"):
+                if user_input[1] == "root":
                     root_access: bool = False
                     os.system("cls")
             except IndexError:
@@ -424,6 +424,6 @@ def PyiaShell():
         "clear", "cls", "help", "run"):
             console.log(f"[bold][red]'{user_input[0]}' is not a valid command![/]")
 
-
+            
 if __name__ == "__main__":
     PyiaShell()
