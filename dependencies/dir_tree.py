@@ -1,5 +1,5 @@
 """
-Demonstrates how to display a tree of files / directories with the Tree renderable.
+Not my script!! I just grafted this onto PyiaShell because i'm lazy
 """
 
 import os
