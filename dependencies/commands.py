@@ -22,5 +22,5 @@ Change Directory command ([yellow]cd [/][purple]{directory}[/] or [yellow]cd [/]
 System Time command ([yellow]systime[/] [gray]-v / --view[/] or [yellow]systime[/] [gray]-e / --edit[/]) -> Changes the way date is formatted in the console 
 New Thread command ([yellow]newthr [/][purple]{application}[/]) -> launches app in separate thread [red](NOTE: THIS IS BROKEN RIGHT NOW!)[/]
 
-Exit command ([yellow]exit[/]) -> Exits pythonia (duh)
+Exit command ([yellow]exit[/]) -> Exits PyiaShell (duh)
 """
