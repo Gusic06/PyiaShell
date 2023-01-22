@@ -1,16 +1,20 @@
+"""Source file for PyiaShell"""
 from rich.console import Console
 from rich import *
 from rich.panel import Panel
-from rich.traceback import *
+from rich.traceback import install
+from rich.tree import Tree
 
-import os
-import subprocess
-import sys
+from os import curdir, getcwd, getlogin, system, mkdir, listdir, startfile, remove, chdir
+from os.path import exists
+from subprocess import call
+from sys import exit as sys_exit
 
-import time
-from threading import *
+from time import strftime, sleep
+from threading import Thread
 import importlib
-import getpass
+from pathlib import Path
+from getpass import getpass
 from cryptography.fernet import Fernet
 import re as regex
 
@@ -20,27 +24,29 @@ from apps.youtube_dl.youtube_dl import youtubeDl
 from dependencies.commands import commands
 from dependencies.check_time_settings import check_time_settings
 from dependencies.command_list import command_list
+from dependencies.dir_tree import walk_directory
+
 
 def PyiaShell():
 
     install()
-    console = Console()
+    console = Console(color_system="truecolor")
 
-    OSNAME = os.getlogin()
+    OSNAME = getlogin()
 
-    os.system("cls")
+    system("cls")
 
     console.print(Panel("[bold][yellow]Welcome![/]\n\nUse [yellow]help[/] to learn what commands are available.[/]", title_align="center", title="[bold][blue]Py[/][yellow]thonia[/]", border_style=""))
-    current_directory = os.curdir
-    loop_back_directory = os.getcwd()
-    root_file_directory = f"{os.curdir}\\root\\password.txt"
+    current_directory = curdir
+    loop_back_directory = getcwd()
+    root_file_directory = f"{curdir}\\root\\password.txt"
     root_access: bool = False
 
     while True:
 
         time_setting = check_time_settings("-") # Giving the function a none value to get an output
 
-        current_date = time.strftime("%d/%m/%y") if time_setting == "EU" else time.strftime("%m/%d/%y")
+        current_date = strftime("%d/%m/%y") if time_setting == "EU" else strftime("%m/%d/%y")
         current_directory = '~' if current_directory == "." else current_directory
         
         if root_access is True:
@@ -54,12 +60,12 @@ def PyiaShell():
         
         
         if user_input[0] == "run":
-            if ".py" in user_input[1] and os.path.exists(user_input[1]):
+            if ".py" in user_input[1] and exists(user_input[1]):
                 try:
-                    os.system(f"py {user_input[1]}")
+                    system(f"py {user_input[1]}")
                 except Exception:
                     try:
-                        subprocess.call(["py", f"{user_input[1]}"])
+                        call(["py", f"{user_input[1]}"])
                     except:
                         console.log("[bold][red]Err[/]")
 
@@ -69,72 +75,84 @@ def PyiaShell():
 
 
         if user_input[0] in ("clear", "cls"):
-            os.system("cls")
+            system("cls")
 
         
         if user_input[0] == "root":
             _dir = current_directory.replace("~", ".") # Temporarily storing the current directory in a variable so it can be used later
-            os.chdir(loop_back_directory)
+            chdir(loop_back_directory)
                 
             try:
                 if user_input[1] in ("-e", "--exit") and root_access is True:
                     root_access: bool = False
-                    os.system("cls")
-                    os.chdir(loop_back_directory)
-                    os.chdir(_dir)
+                    system("cls")
+                    chdir(loop_back_directory)
+                    chdir(_dir)
                     continue
                 if user_input[1] in ("-e", "--exit") and root_access is False:
                     console.log("[bold][red]You don't have root access![/]")
-                    os.chdir(loop_back_directory)
-                    os.chdir(_dir)
+                    chdir(loop_back_directory)
+                    chdir(_dir)
                     continue
                 if user_input[1] not in ("-e", "--exit") and root_access is True:
                     console.log("[bold][red]You already have root access![/]")
-                    os.chdir(loop_back_directory)
-                    os.chdir(_dir)
+                    chdir(loop_back_directory)
+                    chdir(_dir)
                     continue
             except IndexError:
                 if root_access is True:
                     console.log("[bold][red]You already have root access![/]")
-                    os.chdir(loop_back_directory)
-                    os.chdir(_dir)
+                    chdir(loop_back_directory)
+                    chdir(_dir)
                     continue
                 else:
-                    os.chdir(loop_back_directory)
-                    os.chdir(_dir)
+                    chdir(loop_back_directory)
+                    chdir(_dir)
                     pass
 
-            if os.path.exists(fr"{loop_back_directory}\\root") is False:
-                os.system("cls")
+            if exists(fr"{loop_back_directory}\\root") is False:
+                system("cls")
 
-                console.log("[bold][red]A root password has not been set yet.[/]")
+                console.print("[bold][red]A root password has not been set yet.[/]")
                 console.print("[bold][red]Please set a password.[/]", highlight=True)
                 console.print("[bold][red]> [/]", end="")
-                root_password = getpass.getpass("")
+                root_password = getpass("")
 
-                os.mkdir("root")
+                mkdir("root")
+
+                if exists(fr"{loop_back_directory}\\key\\KEY.key") is False:
+                    KEY = Fernet.generate_key()
+                    mkdir("key")
+                    with open(fr"{loop_back_directory}\\key\\KEY.key", "wb") as file:
+                        file.write(KEY)
+                    
+                with open(fr"{loop_back_directory}\\key\\KEY.key", "rb") as file:
+                    _key = file.read()
+                KEY = Fernet(_key)
+
+                root_password = KEY.encrypt(bytes(root_password, "utf-8"))
 
                 with open(fr"{loop_back_directory}\\root\\password.txt", "w") as file:
                     file.write(root_password)
 
-                os.chdir(loop_back_directory)
-                os.chdir(_dir)
-                os.system("cls")
+                chdir(loop_back_directory)
+                chdir(_dir)
+                system("cls")
 
-            if os.path.exists(fr"{loop_back_directory}\\root\\password.txt"):
+            if exists(fr"{loop_back_directory}\\root\\password.txt"):
 
-                os.system("cls")
+                system("cls")
 
                 console.print("[bold][red]Please enter your password.[/]")
                 console.print("[bold][red]> [/]", end="")
-                root_password = getpass.getpass("")
+                root_password = getpass("")
 
-                if os.path.exists(fr"{loop_back_directory}\\key\\KEY.key") is False:
+                if exists(fr"{loop_back_directory}\\key\\KEY.key") is False:
                     KEY = Fernet.generate_key()
-                    os.mkdir("key")
+                    mkdir("key")
                     with open(fr"{loop_back_directory}\\key\\KEY.key", "wb") as file:
                         file.write(KEY)
-                if os.path.exists(fr"{loop_back_directory}\\key\\KEY.key"):
+                if exists(fr"{loop_back_directory}\\key\\KEY.key"):
                     with open(fr"{loop_back_directory}\\key\\KEY.key", "rb") as file:
                         _key = file.read()
                     KEY = Fernet(_key)
@@ -151,46 +169,46 @@ def PyiaShell():
                 if root_password == root_password_from_file:
                     root_access: bool = True
                 if root_password != root_password_from_file:
-                    os.system("cls")
+                    system("cls")
 
                     console.print("[bold][red]Incorrect password![/]")
-                    time.sleep(1.5)
+                    sleep(1.5)
 
-                os.chdir(loop_back_directory)
-                os.chdir(_dir)
-                os.system("cls")
+                chdir(loop_back_directory)
+                chdir(_dir)
+                system("cls")
 
 
         if user_input[0] == "pyvim":
 
             try:
-                if os.path.exists(user_input[1]) and ".py" in user_input[1]:
+                if exists(user_input[1]) and ".py" in user_input[1]:
                     try:
-                        os.system(f"pyvim {user_input[1]}")
+                        system(f"pyvim {user_input[1]}")
                     except PermissionError:
                         try:
-                            subprocess.call(["pyvim", user_input[1]])
+                            call(["pyvim", user_input[1]])
                         except PermissionError:
                             console.log(f"[bold][red]PermissionError: Unable to open {user_input[1]}[/]")
             except IndexError:
                try:
-                   os.system("pyvim")
+                   system("pyvim")
                except PermissionError:
                    try:
-                       subprocess.call(["pyvim"])
+                       call(["pyvim"])
                    except PermissionError:
                        console.log("[bold][red]PermissionError: Unable to open pyvim[/]")
 
 
         if user_input[0] in ("youtube-dl", "Youtube-DL"):
             try:
-                os.system("cls")
+                system("cls")
                 main = YoutubeDL()
                 try:
                     youtubeDl(user_input[1])
                 except IndexError:
                     youtubeDl(console.input("[bold][yellow]Link: [/]"))
-                os.system("cls")
+                system("cls")
             except Exception:
                 pass
 
@@ -199,12 +217,12 @@ def PyiaShell():
 
             if user_input[1] == "install":
                 try:
-                    subprocess.call(["py", "-m", "pip", "install", f"{user_input[2]}"])
+                    call(["py", "-m", "pip", "install", f"{user_input[2]}"])
                 except ModuleNotFoundError:
                     console.log(f"[red]ModuleNotFoundError: {user_input[2]} couldn't be found..[/]");
             if user_input[1] == "uninstall":
                 try:
-                    subprocess.call(["py", "-m", "pip", "uninstall", f"{user_input[2]}"])
+                    call(["py", "-m", "pip", "uninstall", f"{user_input[2]}"])
                 except ModuleNotFoundError:
                     console.log(f"[red]ModuleNotFoundError: {user_input[2]} couldn't be found..[/]")
                     
@@ -214,12 +232,12 @@ def PyiaShell():
 
 
         if user_input[0] == "pylint":
-            if os.path.exists(user_input[1]) and ".py" in user_input[1]:
+            if exists(user_input[1]) and ".py" in user_input[1]:
                 try:
-                    os.system(f"pylint {user_input[1]}")
+                    system(f"pylint {user_input[1]}")
                 except PermissionError:
                     try:
-                        subprocess.call(["pylint", f"{user_input[1]}"])
+                        call(["pylint", f"{user_input[1]}"])
                     except Exception:
                         console.log(f"[bold][red]Error: unable to run pylint on {user_input[1]}.[/]")  
 
@@ -227,36 +245,57 @@ def PyiaShell():
         if user_input[0] == "code":
             if user_input[1] == ".":
                 try:
-                    os.system("code .") 
+                    system("code .") 
                 except Exception:
                     try:
-                        subprocess.call(["code", "."])
+                        call(["code", "."])
                     except Exception:
                         console.log("[bold][red]Error: unable to open VSCode.[/]")  
             if user_input[1] != ".":
-                if os.path.exists(user_input[1]) and ".py" in user_input[1]:
+                if exists(user_input[1]) and ".py" in user_input[1]:
                     try:
-                        os.system(f"code {user_input[1]}")
+                        system(f"code {user_input[1]}")
                     except Exception:
                         try:
-                            subprocess.call(["code", f"{user_input[1]}"])
+                            call(["code", f"{user_input[1]}"])
                         except Exception:
                             console.log(f"[bold][red]Error: unable to open {user_input[1]} in VSCode.[/]")  
-                if os.path.exists(user_input[1]) is False and ".py" in user_input[1]:
+                if exists(user_input[1]) is False and ".py" in user_input[1]:
                     console.log(f"[bold][red]Error: Unable to open {user_input[1]} in VSCode as {user_input[1]} either isn't in the current working directory or it doesn't exist.[/]")
 
         
         if user_input[0] == "ls":
                 try:
-                    for items in os.listdir(user_input[1]):
-                        print(f"[bold][yellow]{items}[/]")
+
+                    if user_input[2] in ("-t", "--tree"):
+                        directory = user_input[1]
+                        tree = Tree(
+                            f":open_file_folder: [link file://{directory}]{directory}",
+                            guide_style="bold bright_blue",
+                        )
+                        walk_directory(Path(directory), tree)
+                        print(tree)
+
+                    if user_input[1] in ("-t", "--tree"):
+                        directory = curdir
+                        tree = Tree(
+                            f":open_file_folder: [link file://{directory}]{directory}",
+                            guide_style="bold bright_blue",
+                        )
+                        walk_directory(Path(directory), tree)
+                        print(tree)
+
+                    if user_input[1] not in ("-t", "--tree") and user_input[2] not in ("-t", "--tree"):
+                        for items in listdir(user_input[1]):
+                            print(f"[bold][yellow]{items}[/]")
+
                 except IndexError:
-                    for items in os.listdir(os.getcwd()):
+                    for items in listdir(getcwd()):
                         print(f"[bold][yellow]{items}[/]")
 
 
         if user_input[0] == "mkdir":
-            os.mkdir(user_input[1])
+            mkdir(user_input[1])
             console.print(f"[bold][yellow]Created {user_input[1]}[/]")
 
 
@@ -269,9 +308,9 @@ def PyiaShell():
                         index_of_string = find_contents.span()
                         file_contents = _string[index_of_string[1]:-1:1] # Slicing from the start of the string to the end of the string to get the contents
                         with open(user_input[1], "w") as file:
-                            file.write(file_contents) 
+                            file.write(file_contents)
                 except IndexError:
-                    user_input[1] = f"{user_input[1]}.txt" if "." not in f"{user_input[1]}[:4]" else user_input[1]
+                    user_input[1] == f"{user_input[1]}.txt" if "." not in f"{user_input[1]}[:4]" else user_input[1]
                     with open(user_input[1], "w") as file:
                         file.write("")
             except IndexError:
@@ -284,11 +323,11 @@ def PyiaShell():
                 if user_input[2] == "-ls":
                     dir_ = user_input[1]
 
-                    for items in os.listdir(dir_):
+                    for items in listdir(dir_):
                         print(f"[bold][yellow]{items}[/]")
 
-                    if os.path.exists(fr".\\{dir_}"):
-                        os.chdir(dir_)
+                    if exists(fr".\\{dir_}"):
+                        chdir(dir_)
                         past_directory = current_directory
                         current_directory = fr"{current_directory}/{dir_}"
                         
@@ -298,36 +337,36 @@ def PyiaShell():
                     dir_ = user_input[1]
                     if dir_ == "..":
                         try:
-                            os.chdir(past_directory)
+                            chdir(past_directory)
                             current_directory = fr"{past_directory}/{current_directory}"
                         except Exception as Err:
                             console.log(f"[bold]Couldn't move up the directory tree -> {Err}[/]")
-                    if os.path.exists(fr".\\{dir_}") is False:
+                    if exists(fr".\\{dir_}") is False:
                         console.log(f"[bold]Couldn't find [yellow]{dir_}[/] in current directory.[/]")
                         pass
-                    if os.path.exists(fr".\\{dir_}"):
-                        os.chdir(dir_)
+                    if exists(fr".\\{dir_}"):
+                        chdir(dir_)
                         current_directory = fr"{current_directory}/{dir_}"
                                  
                 if user_input[1] == "?origin":
-                    os.chdir(loop_back_directory)
-                    current_directory = os.curdir
+                    chdir(loop_back_directory)
+                    current_directory = curdir
 
 
         if user_input[0] == "newthr":
 
             if user_input[1] == "pyflix":
                 app_thread = Thread(target=pyflix, daemon=True)
-                #subprocess.run(["cmd.exe", "/c", "start", "py", pyflix], timeout=15)
+                #run(["cmd.exe", "/c", "start", "py", pyflix], timeout=15)
                 app_thread.start()
 
             if user_input[1] == "youtube-dl":
                 main = YoutubeDL()
                 app_thread = Thread(target=main.run(console._input("[bold][yellow]Link: [/]")), daemon=True)
-                #subprocess.run(["cmd.exe", "/c", "start", f"{app_thread}"], timeout=15)
+                #run(["cmd.exe", "/c", "start", f"{app_thread}"], timeout=15)
                 app_thread.start()
 
-            if ".py" in user_input[1] and os.path.exists(user_input[1]):
+            if ".py" in user_input[1] and exists(user_input[1]):
                 module = importlib.import_module(user_input[1])
                 app_thread = Thread(target=module, daemon=True)
                 app_thread.start()
@@ -354,80 +393,87 @@ def PyiaShell():
                     dir_ = current_directory.replace("~", ".")
                 for items in dir_:
                     print(items)
-                    os.startfile(items)
+                    startfile(items)
                     if ".mp4" in items:
                         duration = 1
-                        os.startfile(items)
-                        time.sleep(duration)
+                        startfile(items)
+                        sleep(duration)
                     else:
                         try:
                             with open(items, "r")as file:
                                 contents = file.read()
-                            console.print(f"[bold][purple]{user_input[1]} >>[/] [yellow]'{contents}'[/]")
+                            console.print(f"[bold][yellow]'{items}' >> {contents}[/]")
                         except PermissionError:
                             pass
             
             if user_input[1] == "pyvim":
                 try:
-                    if os.path.exists(user_input[2]) is True and ".py" in user_input[2]: 
-                        os.system(f"pyvim {user_input[2]}")
-                        os.system("cls")
+                    if exists(user_input[2]) is True and ".py" in user_input[2]: 
+                        system(f"pyvim {user_input[2]}")
+                        system("cls")
                         continue
-                    if user_input[2] == "-c" or user_input[2] == "--credits":
+                    if user_input[2] in ("-c", "--credits"):
                         console.print("[bold][yellow]PyVim[/] was created by [yellow]Jonathan Slenders\nhttps://github.com/prompt-toolkit/pyvim[/]")
                 except IndexError:
-                    os.system("pyvim")
-                    os.system("cls")
+                    system("pyvim")
+                    system("cls")
                     continue
 
             if user_input[1] in ("pyflix", "Pyflix"):
                 pyflix()
-                os.system("cls")
+                system("cls")
                 continue
 
             if user_input[1] in ("youtube-dl", "Youtube-DL"):
                 try:
                     main = YoutubeDL()
                     main.run(user_input[2])
-                    os.system("cls")
+                    system("cls")
                     continue
                 except IndexError:
                     main = YoutubeDL()
                     main.run(input("[bold][yellow]Link: [/]"), 1)
-                    os.system("cls")
+                    system("cls")
                     continue
 
-            if os.path.exists(user_input[1]):
+            if exists(user_input[1]): # Some spaghetti code garbage
 
-                if os.path.exists(user_input[1]):
+                if exists(user_input[1]):
                     with open(user_input[1], "r")as file:
                         contents = file.read()
                     console.print(f"[bold][purple]{user_input[1]} >>[/] [yellow]'{contents}'[/]")
 
-                if os.path.exists(user_input[1]) is False:
+                if exists(user_input[1]) is False:
                     console.log(f"[bold][red]Error: {user_input[1]} either isn't in the current working directory or it doesn't exist.[/]")
             
             if ".mp4" in user_input[1]:
-                os.startfile(user_input[1])
-                console.log(f"[bold][yellow]Playing {user_input[1]} now..[/]")
+                try:
+                    startfile(user_input[1])
+                    console.log(f"[bold][yellow]Playing {user_input[1]} now..[/]")
+                except FileNotFoundError:
+                    console.log(f"[bold][red]Couldn't find {user_input[1]} in current directory[/]")
 
-            if os.path.exists(user_input[1]) is False and user_input[1] != "pyvim":
+            if exists(user_input[1]) is False and user_input[1] != "pyvim":
                     console.log(f"[bold][red]Error: {user_input[1]} either isn't in the current working directory or it doesn't exist.[/]")
 
 
         if user_input[0] in ("delete", "del"):
-            os.remove(user_input[1])
-            console.print(f"[bold][yellow]Deleted {user_input[1]}[/]")
+            try:
+                remove(user_input[1])
+                console.print(f"[bold][yellow]Deleted {user_input[1]}[/]")
+            except Exception as Err:
+                console.log(f"[bold][purple]Unable to delete {user_input[1]} >> [yellow]{Err}[/]")
+                continue # We need this otherwise it bugs out
             
 
         if user_input[0] == "exit":
             try:
                 if user_input[1] in ("root"):
                     root_access: bool = False
-                    os.system("cls")
+                    system("cls")
             except IndexError:
-                os.system("cls")
-                sys.exit()
+                system("cls")
+                sys_exit()
 
         if user_input[0] not in command_list:
             console.log(f"[bold][red]'{user_input[0]}' is not a valid command![/]")
@@ -435,3 +481,4 @@ def PyiaShell():
 
 if __name__ == "__main__":
     PyiaShell()
+    
